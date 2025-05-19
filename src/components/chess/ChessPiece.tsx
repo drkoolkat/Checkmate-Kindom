@@ -1,7 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { PieceType, PieceColor } from '../../utils/types';
+import { useSettings } from '../../context/SettingsContext';
+import { BlurView } from 'expo-blur';
 
 interface ChessPieceProps {
   type: string;
@@ -10,6 +12,8 @@ interface ChessPieceProps {
 }
 
 const ChessPiece: React.FC<ChessPieceProps> = ({ type, color, size }) => {
+  const { settings } = useSettings();
+  const useImages = true;
   const getPiecePath = () => {
     const pieceColor = color === 'w' ? '#fff' : '#000';
     const strokeColor = color === 'w' ? '#000' : '#fff';
@@ -184,7 +188,58 @@ const ChessPiece: React.FC<ChessPieceProps> = ({ type, color, size }) => {
     }
   };
 
+  const renderImagePiece = () => {
+    let pieceSource = require('../../../assets/icon.png');
+    
+    return (
+      <View style={styles.pieceContainer}>
+        {/* Shadow effect */}
+        <View style={[styles.shadow, { width: size, height: size * 0.1 }]}></View>
+        
+        {/* The piece itself */}
+        <Image 
+          source={pieceSource} 
+          style={{ 
+            width: size, 
+            height: size,
+            position: 'absolute',
+            tintColor: color === 'w' ? '#ffffff' : '#000000',
+          }}
+          resizeMode="contain"
+        />
+        
+        {/* Highlight effect for pseudo-3D */}
+        <View style={[styles.highlight, { width: size * 0.7, height: size * 0.2 }]}></View>
+      </View>
+    );
+  };
+
+  if (useImages) {
+    return renderImagePiece();
+  }
+
   return <View>{getPiecePath()}</View>;
 };
+
+const styles = StyleSheet.create({
+  pieceContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shadow: {
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: 50,
+    transform: [{ scaleY: 0.1 }],
+    position: 'absolute',
+    bottom: -5,
+  },
+  highlight: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 50,
+    position: 'absolute',
+    top: 10,
+    transform: [{ scaleX: 0.8 }],
+  }
+});
 
 export default ChessPiece;

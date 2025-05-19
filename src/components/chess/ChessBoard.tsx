@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Dimensions, Text } from 'react-nati
 import { Chess } from 'chess.js';
 import ChessPiece from './ChessPiece';
 import { PieceColor, ChessPosition, ChessMove } from '../../utils/types';
+import { useSettings } from '../../context/SettingsContext';
 
 interface ChessJsMove {
   color: string;
@@ -31,6 +32,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [selectedPosition, setSelectedPosition] = useState<ChessPosition | null>(null);
   const [validMoves, setValidMoves] = useState<ChessPosition[]>([]);
   const [currentTurn, setCurrentTurn] = useState<PieceColor>(PieceColor.White);
+  const { settings } = useSettings();
   
   const windowWidth = Dimensions.get('window').width;
   const boardSize = Math.min(windowWidth, 400);
@@ -63,7 +65,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         const moveResult = chess.move({
           from: algebraicNotation(from),
           to: algebraicNotation(to),
-          promotion: 'q' // Auto-promote to queen for simplicity
+          promotion: settings.autoPromoteToQueen ? 'q' : undefined // Use setting for auto-promotion
         });
         
         if (moveResult) {
@@ -110,10 +112,16 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       move.from === algebraicNotation({ row, col })
     );
     
-    const validPositions = pieceMoves.map(move => ({
-      row: 8 - parseInt(move.to[1]),
-      col: move.to.charCodeAt(0) - 'a'.charCodeAt(0)
-    }));
+    const validPositions = pieceMoves.map(move => {
+      const file = move.to.charAt(0); // e.g., 'e' from 'e4'
+      const rank = move.to.charAt(1); // e.g., '4' from 'e4'
+      
+      const col = file.charCodeAt(0) - 'a'.charCodeAt(0);
+      
+      const row = 8 - parseInt(rank);
+      
+      return { row, col };
+    });
     
     setValidMoves(validPositions);
   };
@@ -140,7 +148,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     if (isSelected(row, col)) {
       return '#aaf'; // Selected square
     }
-    if (isValidMove(row, col)) {
+    if (settings.showValidMoves && isValidMove(row, col)) {
       return '#afa'; // Valid move
     }
     return (row + col) % 2 === 0 ? '#f0d9b5' : '#b58863'; // Standard chess colors
