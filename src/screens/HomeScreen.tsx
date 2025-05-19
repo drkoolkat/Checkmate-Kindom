@@ -6,8 +6,9 @@ import { useSettings } from '../context/SettingsContext';
 
 type RootStackParamList = {
   Home: undefined;
-  Game: { mode: 'local' | 'online' | 'ai', timeControl?: 'blitz' | 'tempo' | 'classic' };
+  Game: { mode: 'local' | 'online' | 'ai', timeControl?: 'blitz' | 'tempo' | 'classic' | 'none' };
   Settings: undefined;
+  Profile: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -23,7 +24,7 @@ const HomeScreen = () => {
     setShowTimerModal(true);
   };
 
-  const handleTimerSelect = (timeControl: 'blitz' | 'tempo' | 'classic') => {
+  const handleTimerSelect = (timeControl: 'blitz' | 'tempo' | 'classic' | 'none') => {
     setShowTimerModal(false);
     navigation.navigate('Game', { mode: selectedMode, timeControl });
   };
@@ -108,6 +109,14 @@ const HomeScreen = () => {
             </TouchableOpacity>
             
             <TouchableOpacity 
+              style={styles.timerOption} 
+              onPress={() => handleTimerSelect('none')}
+            >
+              <Text style={styles.timerOptionTitle}>No Timer</Text>
+              <Text style={styles.timerOptionDesc}>Play without time constraints</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
               style={styles.cancelButton} 
               onPress={handleCancelTimer}
             >
@@ -123,17 +132,20 @@ const HomeScreen = () => {
       
       {/* Profile Picture Display */}
       {settings.profilePicture && (
-        <View style={[
-          styles.profileDisplay,
-          settings.profilePictureShape === 'circle' && styles.circleShape,
-          settings.profilePictureShape === 'square' && styles.squareShape,
-          settings.profilePictureShape === 'star' && styles.starContainer,
-        ]}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Profile')}
+          style={[
+            styles.profileDisplay,
+            settings.profilePictureShape === 'circle' && styles.circleShape,
+            settings.profilePictureShape === 'square' && styles.squareShape,
+            settings.profilePictureShape === 'star' && styles.starContainer,
+          ]}
+        >
           <Image 
             source={{ uri: settings.profilePicture }} 
             style={styles.profileImage} 
           />
-        </View>
+        </TouchableOpacity>
       )}
     </SafeAreaView>
   );

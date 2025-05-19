@@ -13,7 +13,7 @@ interface ChessPieceProps {
 
 const ChessPiece: React.FC<ChessPieceProps> = ({ type, color, size }) => {
   const { settings } = useSettings();
-  const useImages = true;
+  const useImages = false;
   const getPiecePath = () => {
     const pieceColor = color === 'w' ? '#fff' : '#000';
     const strokeColor = color === 'w' ? '#000' : '#fff';

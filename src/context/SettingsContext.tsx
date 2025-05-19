@@ -10,6 +10,8 @@ interface Settings {
   darkMode: boolean;
   profilePicture: string | null;
   profilePictureShape: 'circle' | 'star' | 'square';
+  username: string;
+  useDefaultAvatar: boolean;
 }
 
 interface SettingsContextType {
@@ -27,6 +29,8 @@ const defaultSettings: Settings = {
   darkMode: false,
   profilePicture: null,
   profilePictureShape: 'circle',
+  username: 'Chess Player',
+  useDefaultAvatar: false,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

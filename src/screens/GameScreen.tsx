@@ -8,8 +8,9 @@ import { useSettings } from '../context/SettingsContext';
 
 type RootStackParamList = {
   Home: undefined;
-  Game: { mode: 'local' | 'online' | 'ai', timeControl?: 'blitz' | 'tempo' | 'classic' };
+  Game: { mode: 'local' | 'online' | 'ai', timeControl?: 'blitz' | 'tempo' | 'classic' | 'none' };
   Settings: undefined;
+  Profile: undefined;
 };
 
 type GameScreenRouteProp = RouteProp<RootStackParamList, 'Game'>;
@@ -31,6 +32,11 @@ const GameScreen = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
+    if (timeControl === 'none') {
+      setGameStarted(true);
+      return;
+    }
+    
     let initialTime = 0;
     
     switch (timeControl) {
@@ -62,17 +68,27 @@ const GameScreen = () => {
       clearInterval(timerRef.current);
     }
     
+    if (timeControl === 'none') {
+      return;
+    }
+    
     timerRef.current = setInterval(() => {
       if (currentTurn === PieceColor.White) {
-        setWhiteTime(prev => Math.max(0, prev - 1));
-        if (whiteTime <= 1) {
-          handleTimeOut();
-        }
+        setWhiteTime(prev => {
+          const newTime = Math.max(0, prev - 1);
+          if (newTime === 0) {
+            handleTimeOut();
+          }
+          return newTime;
+        });
       } else {
-        setBlackTime(prev => Math.max(0, prev - 1));
-        if (blackTime <= 1) {
-          handleTimeOut();
-        }
+        setBlackTime(prev => {
+          const newTime = Math.max(0, prev - 1);
+          if (newTime === 0) {
+            handleTimeOut();
+          }
+          return newTime;
+        });
       }
     }, 1000);
   };
@@ -182,23 +198,25 @@ const GameScreen = () => {
         />
       </View>
       
-      {/* Timer in bottom right corner */}
-      <View style={styles.timerContainer}>
-        <View style={styles.timer}>
-          <Text style={[
-            styles.timerText, 
-            currentTurn === PieceColor.White && styles.activeTimerText
-          ]}>
-            W: {formatTime(whiteTime)}
-          </Text>
-          <Text style={[
-            styles.timerText, 
-            currentTurn === PieceColor.Black && styles.activeTimerText
-          ]}>
-            B: {formatTime(blackTime)}
-          </Text>
+      {/* Timer in bottom right corner - only show if not using 'none' timeControl */}
+      {timeControl !== 'none' && (
+        <View style={styles.timerContainer}>
+          <View style={styles.timer}>
+            <Text style={[
+              styles.timerText, 
+              currentTurn === PieceColor.White && styles.activeTimerText
+            ]}>
+              W: {formatTime(whiteTime)}
+            </Text>
+            <Text style={[
+              styles.timerText, 
+              currentTurn === PieceColor.Black && styles.activeTimerText
+            ]}>
+              B: {formatTime(blackTime)}
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
       
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={handleResign}>
@@ -223,17 +241,20 @@ const GameScreen = () => {
       
       {/* Profile Picture Display */}
       {settings.profilePicture && (
-        <View style={[
-          styles.profileDisplay,
-          settings.profilePictureShape === 'circle' && styles.circleShape,
-          settings.profilePictureShape === 'square' && styles.squareShape,
-          settings.profilePictureShape === 'star' && styles.starShape,
-        ]}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Profile')}
+          style={[
+            styles.profileDisplay,
+            settings.profilePictureShape === 'circle' && styles.circleShape,
+            settings.profilePictureShape === 'square' && styles.squareShape,
+            settings.profilePictureShape === 'star' && styles.starShape,
+          ]}
+        >
           <Image 
             source={{ uri: settings.profilePicture }} 
             style={styles.profileImage} 
           />
-        </View>
+        </TouchableOpacity>
       )}
       
       <TouchableOpacity 
